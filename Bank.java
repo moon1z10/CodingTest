@@ -1,10 +1,12 @@
+import java.math.BigInteger;
+
 public interface Bank {
     boolean isValidCard(String card_number);
     boolean isValidPIN(String card_number, int pin);
     String[] getAccounts(String card_number);
-    int getBalance(String account);
+    BigInteger getBalance(String account);
     //  return the balance after deposit
-    int deposit(String account, int amount);
+    BigInteger deposit(String account, BigInteger amount);
     //  return the result of withdraw
-    boolean withdraw(String account, int amount);
+    boolean withdraw(String account, BigInteger amount);
 }

@@ -1,3 +1,4 @@
+import java.math.BigInteger;
 import java.util.Scanner;
 
 public class ATM {
@@ -6,7 +7,7 @@ public class ATM {
     private String card_number;
     private String account;
     private Bank bank;
-    private String[] modes;
+    private String[] transactions;
 
     Scanner scanner = new Scanner(System.in);
 
@@ -23,7 +24,7 @@ public class ATM {
     private void init() {
         this.card_number = "";
         this.account = "";
-        this.modes = new String[]{"See Balance", "Deposit", "Withdraw"};
+        this.transactions = new String[]{"See Balance", "Deposit", "Withdraw"};
     }
 
     public void start() {
@@ -47,17 +48,22 @@ public class ATM {
 
     void getPIN() {
         for (int i = 0; i < MAX_ENTERING_PIN_TRIAL; i++) {
-            System.out.println("Please enter the PIN.");
-            int pin = scanner.nextInt();
-            if (bank.isValidPIN(card_number, pin)) {
-                String[] accounts = bank.getAccounts(card_number);
-                if (accounts.length == 0) {
-                    System.out.println("There's no account connected with your card. Please visit the bank.");
+            try {
+                System.out.println("Please enter the PIN.");
+                int pin = scanner.nextInt();
+                if (bank.isValidPIN(card_number, pin)) {
+                    String[] accounts = bank.getAccounts(card_number);
+                    if (accounts.length == 0) {
+                        System.out.println("There's no account connected with your card. Please visit the bank.");
+                    } else {
+                        selectAccount(accounts);
+                    }
+                    return ;
                 } else {
-                    selectAccount(accounts);
+                    System.out.println("Wrong PIN number. Please try again.");
                 }
-                return ;
-            } else {
+            } catch (Exception e) {
+                //  Defense to input very large number than Integer range
                 System.out.println("Wrong PIN number. Please try again.");
             }
         }
@@ -71,26 +77,36 @@ public class ATM {
         }
         int account_index;
         while(true) {
-            account_index = scanner.nextInt() - 1;
-            if (0 <= account_index && account_index < accounts.length) break;
-            System.out.println("Please select the account from the list.");
+            try {
+                account_index = scanner.nextInt() - 1;
+                if (0 <= account_index && account_index < accounts.length) break;
+                System.out.println("Please select the account from the list.");
+            } catch (Exception e) {
+                //  Defense to input very large number than Integer range
+                System.out.println("Please select the account from the list.");
+            }
         }
         this.account = accounts[account_index];
-        selectMode();
+        selectTransaction();
     }
 
-    void selectMode() {
+    void selectTransaction() {
         System.out.println("Please select transaction you'd like to proceed.");
-        for (int i = 0; i < modes.length; i++) {
-            System.out.printf("%d: %s\n", (i+1), modes[i]);
+        for (int i = 0; i < transactions.length; i++) {
+            System.out.printf("%d: %s\n", (i+1), transactions[i]);
         }
-        int mode;
+        int transaction;
         while(true) {
-            mode = scanner.nextInt() - 1;
-            if (0 <= mode && mode < modes.length) break;
-            System.out.println("Please select the transaction from the list.");
+            try {
+                transaction = scanner.nextInt() - 1;
+                if (0 <= transaction && transaction < transactions.length) break;
+                System.out.println("Please select the transaction from the list.");
+            } catch (Exception e) {
+                //  Defense to input very large number than Integer range
+                System.out.println("Please select the account from the list.");
+            }
         }
-        switch (mode) {
+        switch (transaction) {
             case 0: seeBalance();   break;
             case 1: deposit();      break;
             case 2: withdraw();     break;
@@ -98,8 +114,9 @@ public class ATM {
     }
 
     void seeBalance() {
-        int balance = bank.getBalance(account);
-        if (balance < 0) {
+        BigInteger balance = bank.getBalance(account);
+        BigInteger zeroBigInt = new BigInteger("0");
+        if (balance.compareTo(zeroBigInt) < 0) {
             System.out.println("Something wrong with your account. Please visit the bank");
         } else {
             System.out.printf("Your balance : %d\nEnd the transaction.\n", balance);
@@ -108,23 +125,25 @@ public class ATM {
 
     void deposit() {
         System.out.println("Please enter amount of money you'd like to deposit.");
-        int amount = scanner.nextInt();
-        if (amount < 0) {
+        BigInteger zeroBigInt = new BigInteger("0");
+        BigInteger amount = scanner.nextBigInteger();
+        if (amount.compareTo(zeroBigInt) < 0) {
             System.out.println("You cannot enter the negative amount.\nEnd the transaction");
             return;
         }
-        int balance = bank.deposit(account, amount);
-        if (balance < 0) {
+        BigInteger balance = bank.deposit(account, amount);
+        if (balance.compareTo(zeroBigInt) < 0) {
             System.out.println("Something wrong with your account. Please visit the bank");
         } else {
-            System.out.printf("Done to deposit. Your balance : %d\nEnd the transaction", balance);
+            System.out.printf("Done to deposit. Your balance : %d\nEnd the transaction\n", balance);
         }
     }
 
     void withdraw() {
         System.out.println("Please enter amount of money you'd like to withdraw.");
-        int amount = scanner.nextInt();
-        if (amount < 0) {
+        BigInteger zeroBigInt = new BigInteger("0");
+        BigInteger amount = scanner.nextBigInteger();
+        if (amount.compareTo(zeroBigInt) < 0) {
             System.out.println("You cannot enter the negative amount.\nEnd the transaction");
             return;
         }
